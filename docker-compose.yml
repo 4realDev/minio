@@ -1,0 +1,25 @@
+version: '3.9'
+
+services:
+  koster-minio:
+    image: quay.io/minio/minio
+    container_name: koster-minio
+    platform: linux/amd64
+    restart: always
+    env_file: .env
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+      MINIO_DOMAIN: ${MINIO_END_POINT}
+    ports:
+      - ${MINIO_PORT}:${MINIO_PORT}
+      - ${MINIO_WEB_PORT}:${MINIO_WEB_PORT}
+    volumes:
+      - ./minio-data:/var/lib/minio-db/data
+    healthcheck:
+      test: curl -I --fail http://127.0.0.1:${MINIO_PORT}/minio/health/live
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    command: server /data --console-address ":${MINIO_WEB_PORT}"
